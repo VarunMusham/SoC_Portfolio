@@ -1,0 +1,512 @@
+/* Tokens. The landing page is dark (board view); the docs page is light (datasheet). */
+:root {
+  --board-deep: #04060a;
+  --board-mid: #0a0f17;
+  --text: #e6e9ef;
+  --muted: #8d97a8;
+  --line: rgba(110, 160, 255, 0.16);
+  --panel: rgba(8, 11, 17, 0.7);
+  --signal: #4d9bff;
+  --gold: #d6a756;
+
+  --paper: #f3f0e6;
+  --paper-ink: #13202a;
+  --paper-muted: #56656d;
+  --paper-rule: #d4cdbb;
+  --accent: #a4601a;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--board-deep);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ---------- Landing: SoC board ---------- */
+
+.landing {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 60% 40%, #0f1a2b 0%, var(--board-mid) 45%, var(--board-deep) 100%);
+}
+
+/* Darkens the left edge so the headline reads over the render. */
+.landing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(100deg, rgba(4, 6, 10, 0.82) 0%, rgba(4, 6, 10, 0.45) 30%, transparent 55%),
+    linear-gradient(to top, rgba(4, 6, 10, 0.7) 0%, transparent 28%);
+  pointer-events: none;
+}
+
+.landing-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.landing-scene canvas {
+  display: block;
+}
+
+.scene-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-hero {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  padding: clamp(24px, 5vw, 56px);
+  pointer-events: none;
+}
+
+.landing-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 6vw, 80px);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.landing-hero p {
+  max-width: 40ch;
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.legend {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 3;
+  padding: 0 clamp(24px, 5vw, 56px) clamp(20px, 4vw, 40px);
+}
+
+.legend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-item {
+  min-width: 68px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.legend-item:hover:not(:disabled) {
+  box-shadow: 0 0 18px rgba(77, 155, 255, 0.25);
+}
+
+.legend-item:hover:not(:disabled) {
+  border-color: var(--signal);
+  background: rgba(16, 28, 48, 0.85);
+}
+
+.legend-item:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+.legend-item:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.legend-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* While the camera flies to a chip (and while its docs are open) the overlay steps aside. */
+.landing::before,
+.landing-hero,
+.legend {
+  transition: opacity 0.45s ease;
+}
+
+.landing--focused::before,
+.landing--focused .landing-hero,
+.landing--focused .legend {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* No WebGL: the legend becomes the whole page. */
+.landing--static {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing--static .legend {
+  position: relative;
+  padding-top: 8px;
+}
+
+/* Callouts above each IP chip: a name with a hairline leader dropping to the package. */
+.chip-callout {
+  position: relative;
+  display: inline-block;
+  padding: 2px 6px;
+  border-left: 1px solid rgba(140, 180, 255, 0.55);
+  background: rgba(4, 7, 12, 0.6);
+  color: rgba(226, 232, 242, 0.9);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.chip-callout::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  height: 26px;
+  border-left: 1px solid rgba(140, 180, 255, 0.35);
+}
+
+.chip-callout.is-hot {
+  border-left-color: var(--signal);
+  color: #ffffff;
+  opacity: 1;
+  transform: none;
+}
+
+.chip-callout.is-hot::after {
+  border-left-color: var(--signal);
+}
+
+/* ---------- Docs: datasheet page ---------- */
+
+.doc {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.doc :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.doc-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 14px clamp(16px, 4vw, 48px);
+  border-bottom: 1px solid var(--paper-rule);
+  background: rgba(243, 240, 230, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.doc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--paper-ink);
+  border-radius: 2px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.doc-back:hover {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.doc kbd {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.doc-pager {
+  display: flex;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.doc-pager a {
+  color: var(--accent);
+}
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 80px);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 72px) clamp(16px, 4vw, 48px) 120px;
+}
+
+.doc-toc {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+}
+
+.doc-toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--paper-rule);
+}
+
+.doc-toc a {
+  display: block;
+  margin-left: -1px;
+  padding: 6px 0 6px 16px;
+  border-left: 2px solid transparent;
+  color: var(--paper-muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.doc-toc a:hover {
+  border-left-color: var(--accent);
+  color: var(--paper-ink);
+}
+
+.doc-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+
+.doc-summary {
+  max-width: 46ch;
+  margin: 20px 0 0;
+  color: var(--paper-muted);
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 36px 0 0;
+  border-top: 1px solid var(--paper-rule);
+  border-bottom: 1px solid var(--paper-rule);
+}
+
+.doc-meta div {
+  flex: 1 1 140px;
+  padding: 14px 16px 14px 0;
+}
+
+.doc-meta dt {
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.doc-meta dd {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.doc section {
+  scroll-margin-top: 80px;
+  padding-top: 48px;
+}
+
+.doc section h2 {
+  margin-bottom: 16px;
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.1;
+}
+
+.doc section p {
+  max-width: 68ch;
+  margin: 0 0 14px;
+}
+
+.doc-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.doc-list li {
+  margin-bottom: 6px;
+}
+
+.doc-list li::marker {
+  color: var(--accent);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--paper-ink);
+}
+
+table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+th {
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--paper-rule);
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+
+td {
+  padding: 12px 14px 12px 0;
+  border-bottom: 1px solid var(--paper-rule);
+  vertical-align: top;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.doc-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.doc-steps li {
+  display: grid;
+  grid-template-columns: 2.4em 1fr;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--paper-rule);
+  counter-increment: step;
+}
+
+.doc-steps li::before {
+  content: counter(step, decimal-leading-zero);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .legend ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .legend-item {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 4px;
+  }
+
+  /* Keeps the hero copy readable over the board labels on narrow screens. */
+  .landing-hero {
+    background: linear-gradient(to bottom, rgba(4, 6, 10, 0.9) 60%, transparent);
+  }
+}
+
+@media (max-width: 860px) {
+  .doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .doc-toc {
+    position: static;
+  }
+
+  .doc-toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    border-left: none;
+  }
+
+  .doc-toc a {
+    padding: 4px 0;
+    border-left: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legend-item,
+  .chip-callout {
+    transition: none;
+  }
+}

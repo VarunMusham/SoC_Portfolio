@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "106acf230014cbb43ca34e6410371321b56ca742f9ee0442e8ec05bf02eb0384"
+    },
+    "react-three-fiber": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/react-three-fiber/SKILL.md",
+      "computedHash": "b118f1385a1ec24604a70a4798e0fb5534b1f09ac8d96f019706ff3902bcb5fa"
+    }
+  }
+}
