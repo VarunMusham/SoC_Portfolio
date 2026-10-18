@@ -17,8 +17,10 @@ the chip, over the live scene.
 - Camera flight into a chip, and a clip-path reveal that starts from the chip's
   position on screen. Esc or the back button reverses both.
 - Deep links (`/ip/spi`) and browser history work. The camera always follows the URL.
-- Keyboard and screen-reader access through a legend of buttons. The 3D scene is
-  hidden from assistive technology.
+- A clean landing view with no text: just the board. A visually hidden list of the
+  IP blocks gives keyboard and screen-reader access (press Tab to see it). The 3D
+  scene itself is hidden from assistive technology.
+- Built for laptop-sized screens only (checked at 1366x768, 1536x864 and 1920x1080).
 - Reduced-motion support, a no-WebGL fallback, and automatic render-quality
   scaling.
 - All documentation lives in one typed data file.
@@ -69,7 +71,7 @@ src/
   data/ips.ts          IP documentation (edit this)
   lib/motion.ts        reduced-motion and WebGL detection
   pages/
-    Landing.tsx        hero, IP legend, lazy-loaded 3D scene
+    Landing.tsx        hidden headline and IP list, lazy-loaded 3D scene
     IpPage.tsx         documentation page and circle reveal
   scene/
     SocScene.tsx       canvas, lighting, camera flights, post-processing

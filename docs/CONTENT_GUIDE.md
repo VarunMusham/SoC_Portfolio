@@ -33,7 +33,7 @@ page at `/ip/<slug>`.
 | Field | Type | Where it appears | Notes |
 | --- | --- | --- | --- |
 | `slug` | string | URL (`/ip/<slug>`), React keys | Lowercase, URL-safe, unique. Changing it breaks existing links. |
-| `name` | string | Chip lid, 3D callout, legend button | Keep it short. Names of three characters or fewer are printed larger on the lid. |
+| `name` | string | Chip lid, hover label, and the hidden legend button | Keep it short. Names of three characters or fewer are printed larger on the lid. |
 | `fullName` | string | Documentation page heading | |
 | `summary` | string | Documentation page, and read by screen readers from the legend | One sentence. |
 | `version` | string | Chip lid (uppercased) and the documentation metadata | Your IP revision, for example `r2p1`. |
@@ -73,7 +73,7 @@ page at `/ip/<slug>`.
 
 - Write for the engineer who will integrate the block. Lead with what it does, then
   the programming sequence.
-- Keep each `description` to one line. The tables are narrow on phone screens.
+- Keep each `description` to one line, so the tables stay easy to scan.
 - Use the same register names as your RTL and specification, so readers can search
   them.
 - If a value is not yet verified, say so in the text rather than presenting a guess

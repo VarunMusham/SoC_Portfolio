@@ -42,9 +42,10 @@ Test these by hand in a browser after any change to the scene or the transitions
 2. Clicking a chip flies the camera in, and the docs reveal from that chip.
 3. Esc and the back button return to the map, and the camera pulls back out.
 4. Refreshing on `/ip/<slug>` shows the docs. The camera starts on that chip.
-5. Hovering a legend button lifts its chip and pauses the rotation.
-6. At a phone width (390 px), the page does not scroll sideways.
-7. With reduced motion enabled in the OS settings, transitions are quick cuts.
+5. Hovering a chip lifts it, lights its bus, shows its name and pauses the rotation.
+6. The whole ring is visible at 1366x768, 1536x864 and 1920x1080.
+7. Pressing Tab reveals the hidden IP list at the bottom of the screen.
+8. With reduced motion enabled in the OS settings, transitions are quick cuts.
 
 ## Render quality for testing
 
@@ -86,6 +87,8 @@ set `currentTime`, as the scene tests did. Do not rely on screenshot timing.
 - **The scene chunk is large.** It is about 1.1 MB before compression, mostly
   three.js and the post-processing library. It loads only on the landing page.
 - **Placeholder content.** See [CONTENT_GUIDE.md](CONTENT_GUIDE.md).
+- **Laptop screens only.** Phones, tablets and portrait displays are not
+  supported. There is no responsive layout.
 - **Eight blocks.** The layout is tuned for eight IP blocks. More blocks have not
   been tested.
 - **External fonts.** Fonts load from Google Fonts. The page still works without

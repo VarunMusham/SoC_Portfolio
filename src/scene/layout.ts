@@ -26,7 +26,7 @@ export const IP_CHIP = {
 };
 
 export const palette = {
-  background: '#04060a',
+  background: '#0a1222',
   signal: new THREE.Color(0.28, 0.58, 1.0),
   pin: '#c9b48a',
   gold: '#d9b86a',

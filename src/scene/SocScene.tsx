@@ -16,7 +16,6 @@ import { createCircuitTexture } from './textures';
 export type Origin = { x: number; y: number };
 
 type Quality = 'high' | 'low';
-type Framing = 'wide' | 'normal' | 'portrait';
 
 type SceneProps = {
   /** Chip the camera should be on; null means the overview. */
@@ -54,14 +53,8 @@ const ROTATION_SPEED = 0.06;
 const ARC_LIFT = 3.5;
 const NO_HOVER = -10;
 
-// Wide screens push the board right of the hero copy; portrait screens pull back to fit the ring.
-function overviewPose(framing: Framing): Pose {
-  if (framing === 'portrait') {
-    return { pos: new THREE.Vector3(0, 14, 23), look: new THREE.Vector3(0, -1.5, 0) };
-  }
-  const shift = framing === 'wide' ? 2.8 : 0;
-  return { pos: new THREE.Vector3(-shift, 7.4, 14), look: new THREE.Vector3(-shift, -0.9, 0) };
-}
+// The SoC sits centred in the view. The layout targets laptop-sized landscape screens only.
+const OVERVIEW: Pose = { pos: new THREE.Vector3(0, 8, 14.5), look: new THREE.Vector3(0, -0.6, 0) };
 
 // Where the camera should sit to look at a chip, using the board's current spin.
 function focusPose(group: THREE.Group, index: number): Pose {
@@ -116,18 +109,14 @@ function Scene({
 }: SceneProps & { quality: Quality }) {
   // The label root is mounted before the scene renders, so it is never null here.
   const portal = labelRoot as RefObject<HTMLElement>;
-  const { camera, gl, size } = useThree();
+  const { camera, gl } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
-  const aspect = size.width / size.height;
-  const framing: Framing = aspect < 0.8 ? 'portrait' : aspect > 1.3 ? 'wide' : 'normal';
-  const overview = useMemo(() => overviewPose(framing), [framing]);
   const [reduced] = useState(prefersReducedMotion);
 
   const groupRef = useRef<THREE.Group>(null);
   const dofRef = useRef<DepthOfFieldEffect>(null);
   const tweenRef = useRef<Tween | null>(null);
-  const overviewRef = useRef(overview);
-  const lookRef = useRef(overview.look.clone());
+  const lookRef = useRef(OVERVIEW.look.clone());
   const hoverRef = useRef(NO_HOVER);
   const previewRef = useRef(NO_HOVER);
   // The chip whose bus glows: pointer hover wins over a legend preview.
@@ -152,15 +141,14 @@ function Scene({
     previewRef.current = previewIndex >= 0 ? previewIndex : NO_HOVER;
   }, [previewIndex]);
 
-  // Frame the overview for the current screen shape, on first load and after resizes.
+  // Start on the overview. Focus changes after mount move the camera from there.
   useLayoutEffect(() => {
-    overviewRef.current = overview;
     if (tweenRef.current || zoomedRef.current) return;
-    cam.position.copy(overview.pos);
-    lookRef.current.copy(overview.look);
+    cam.position.copy(OVERVIEW.pos);
+    lookRef.current.copy(OVERVIEW.look);
     cam.fov = OVERVIEW_FOV;
     cam.updateProjectionMatrix();
-  }, [cam, overview]);
+  }, [cam]);
 
   // Read through refs so toggling them does not restart a camera move.
   const activeRef = useRef(active);
@@ -178,7 +166,7 @@ function Scene({
 
     if (index < 0) {
       if (!zoomedRef.current) return;
-      tweenRef.current = makeTween(cam, lookRef.current, overviewRef.current, OVERVIEW_FOV, reduced ? 250 : RETURN_MS, () => {
+      tweenRef.current = makeTween(cam, lookRef.current, OVERVIEW, OVERVIEW_FOV, reduced ? 250 : RETURN_MS, () => {
         zoomedRef.current = false;
       });
       return;
@@ -240,13 +228,15 @@ function Scene({
   return (
     <>
       <color attach="background" args={[palette.background]} />
-      <fogExp2 attach="fog" args={['#060a12', 0.032]} />
+      <fogExp2 attach="fog" args={['#08101d', 0.024]} />
 
-      <ambientLight intensity={0.35} color="#9fb4d8" />
+      <ambientLight intensity={0.5} color="#a9bde3" />
+      {/* Soft sky-to-ground fill, so the board and components read in the shadows. */}
+      <hemisphereLight args={["#8fb0ff", "#141c33", 0.5]} />
       <directionalLight
         position={[-7, 12, 6]}
-        intensity={2.6}
-        color="#e4ebff"
+        intensity={3.1}
+        color="#eaf0ff"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-13}
@@ -258,13 +248,14 @@ function Scene({
         shadow-bias={-0.0004}
         shadow-normalBias={0.02}
       />
-      <directionalLight position={[8, 3, -6]} intensity={2.2} color="#3d6bff" />
+      <directionalLight position={[8, 3, -6]} intensity={3} color="#4a78ff" />
 
       {/* Studio reflections for the metal parts, generated locally rather than loaded from a CDN. */}
-      <Environment resolution={256} frames={1} environmentIntensity={1.4}>
-        <Lightformer form="rect" intensity={2} color="#cdd9ff" position={[0, 9, -3]} rotation-x={Math.PI / 2} scale={[16, 5, 1]} />
-        <Lightformer form="rect" intensity={5} color="#2f6bff" position={[-12, 2, 2]} rotation-y={Math.PI / 2} scale={[12, 1.2, 1]} />
-        <Lightformer form="rect" intensity={1.5} color="#ffd6a6" position={[12, 3, 5]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
+      <Environment resolution={256} frames={1} environmentIntensity={1.8}>
+        <Lightformer form="rect" intensity={3} color="#d6e1ff" position={[0, 9, -3]} rotation-x={Math.PI / 2} scale={[20, 7, 1]} />
+        <Lightformer form="rect" intensity={6} color="#2f6bff" position={[-12, 2, 2]} rotation-y={Math.PI / 2} scale={[12, 2, 1]} />
+        <Lightformer form="rect" intensity={3} color="#ffd6a6" position={[12, 3, 5]} rotation-y={-Math.PI / 2} scale={[8, 3, 1]} />
+        <Lightformer form="rect" intensity={2.5} color="#8fb0ff" position={[0, 4, 12]} scale={[18, 3, 1]} />
       </Environment>
 
       <group ref={groupRef}>
@@ -290,9 +281,9 @@ function Scene({
 
       <EffectComposer multisampling={quality === 'high' ? 4 : 0}>
         {quality === 'high' && <DepthOfField ref={dofRef} target={[0, 0, 0]} worldFocusRange={18} bokehScale={2.2} />}
-        <Bloom mipmapBlur luminanceThreshold={0.55} luminanceSmoothing={0.25} intensity={1.15} radius={0.72} />
-        <Noise premultiply opacity={0.35} />
-        <Vignette offset={0.22} darkness={0.78} />
+        <Bloom mipmapBlur luminanceThreshold={0.45} luminanceSmoothing={0.25} intensity={1.4} radius={0.72} />
+        <Noise premultiply opacity={0.2} />
+        <Vignette offset={0.3} darkness={0.5} />
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       </EffectComposer>
     </>

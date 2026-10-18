@@ -66,12 +66,13 @@ export default function Landing() {
         </div>
       )}
 
-      <header className="landing-hero">
+      {/* With the scene running the page shows only the board; the text stays for assistive technology. */}
+      <header className={webgl ? 'sr-only' : 'landing-hero'}>
         <h1>Legacy IP, mapped on one die.</h1>
         <p>
           Eight peripheral blocks on a shared SoC bus.{' '}
           {webgl
-            ? 'Click a chip on the board or pick one below to open its documentation.'
+            ? 'Click a chip on the board or pick one from the list to open its documentation.'
             : 'Pick a block below to open its documentation.'}
         </p>
       </header>

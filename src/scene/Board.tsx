@@ -102,7 +102,7 @@ export function Board() {
     const mesh = greebleRef.current;
     if (!mesh) return;
     const matrix = new THREE.Matrix4();
-    const base = new THREE.Color('#444e5d');
+    const base = new THREE.Color('#4f5b70');
     const color = new THREE.Color();
     greebles.forEach((g, i) => {
       matrix.makeScale(g.w, g.h, g.d).setPosition(g.x, g.h / 2, g.z);

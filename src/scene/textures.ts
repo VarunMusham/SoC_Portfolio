@@ -127,7 +127,7 @@ export function createBoardTexture() {
   const { canvas, ctx } = makeCanvas(size);
   const random = mulberry32(11);
 
-  ctx.fillStyle = '#10141b';
+  ctx.fillStyle = '#131a28';
   ctx.fillRect(0, 0, size, size);
 
   for (let i = 0; i < 70; i++) {
@@ -135,7 +135,7 @@ export function createBoardTexture() {
     const h = 20 + random() * 160;
     const x = random() * size;
     const y = random() * size;
-    ctx.fillStyle = `rgba(40, 50, 66, ${0.25 + random() * 0.35})`;
+    ctx.fillStyle = `rgba(46, 58, 80, ${0.3 + random() * 0.35})`;
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = 'rgba(110, 140, 190, 0.08)';
     ctx.lineWidth = 1;

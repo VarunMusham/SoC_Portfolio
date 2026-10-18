@@ -62,7 +62,7 @@ export function IpChip({ index, slug, name, version, locked, previewed, footprin
     const damp = THREE.MathUtils.damp;
     if (liftRef.current) liftRef.current.position.y = damp(liftRef.current.position.y, active ? LIFT : 0, 7, delta);
     if (footprintMat.current) {
-      footprintMat.current.emissiveIntensity = damp(footprintMat.current.emissiveIntensity, active ? 3.4 : 1.1, 7, delta);
+      footprintMat.current.emissiveIntensity = damp(footprintMat.current.emissiveIntensity, active ? 4 : 1.8, 7, delta);
     }
     if (lidMat.current) lidMat.current.emissiveIntensity = damp(lidMat.current.emissiveIntensity, active ? 2 : 0, 7, delta);
   });
@@ -93,7 +93,7 @@ export function IpChip({ index, slug, name, version, locked, previewed, footprin
           map={footprint}
           emissiveMap={footprint}
           emissive="#ffffff"
-          emissiveIntensity={1.1}
+          emissiveIntensity={1.8}
           roughness={0.35}
           metalness={0.3}
         />

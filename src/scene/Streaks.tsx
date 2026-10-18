@@ -82,7 +82,7 @@ function buildStreaks(): Streak[] {
         width: 0.035,
         speed: (lane % 2 === 0 ? 1 : -1) * (1.6 + random() * 1.4),
         group: index,
-        base: 0.16,
+        base: 0.3,
       });
     }
   });
@@ -97,7 +97,7 @@ function buildStreaks(): Streak[] {
     const end = Math.max(-half, Math.min(half, start + (random() > 0.5 ? length : -length)));
     const width = 0.025 + random() * 0.03;
     const speed = (random() > 0.5 ? 1 : -1) * (1.5 + random() * 4);
-    const base = 0.04 + random() * 0.1;
+    const base = 0.08 + random() * 0.14;
     streaks.push(
       horizontal
         ? { x1: start, z1: across, x2: end, z2: across, width, speed, group: -1, base }

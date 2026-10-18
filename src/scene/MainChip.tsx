@@ -70,7 +70,7 @@ export function MainChip({ animate }: { animate: boolean }) {
           map={circuit}
           emissiveMap={circuit}
           emissive="#ffffff"
-          emissiveIntensity={2.4}
+          emissiveIntensity={3.4}
           roughness={0.3}
           metalness={0.3}
         />

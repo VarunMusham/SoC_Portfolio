@@ -9,7 +9,7 @@ The app has two routes:
 
 | Route | Page | What is visible |
 | --- | --- | --- |
-| `/` | `Landing` | The 3D SoC map, the hero text and the IP legend |
+| `/` | `Landing` | The 3D SoC map (the headline and IP legend are visually hidden) |
 | `/ip/:slug` | `IpPage` | A documentation page over the same map |
 
 `App.tsx` renders `Landing` on every route, so the 3D scene stays mounted while
@@ -75,9 +75,9 @@ camera therefore rises over the board and swoops down, rather than skimming it.
 | Return to overview | 1500 ms | 28° to 36° |
 | Reduced motion (either way) | 250 ms | unchanged |
 
-Both the focus pose and the overview pose depend on the viewport shape. Wide
-screens shift the scene to the right of the hero text. Portrait screens pull the
-camera back so the whole ring fits.
+The overview pose is fixed and centres the SoC. The project targets laptop-sized
+landscape screens only (checked at 1366x768, 1536x864 and 1920x1080), so there is
+no per-device camera framing.
 
 ## Rendering
 
@@ -107,20 +107,28 @@ avoids the problem. See [DEVELOPMENT.md](DEVELOPMENT.md#troubleshooting).
 
 ## Accessibility and fallbacks
 
-- The legend is the accessible navigation. Each button has the chip's name, and
-  its summary is read by screen readers through visually hidden text.
-- Keyboard focus on a legend button previews the chip, just as hovering does.
+- The landing page shows only the board: no headline or visible buttons. The
+  headline and the IP legend stay in the page, visually hidden, as the accessible
+  navigation. Each legend button has the chip's name, and its summary is read by
+  screen readers through hidden text.
+- Pressing Tab reveals the legend at the bottom of the screen while it has focus.
+  Focusing a legend button previews the chip, just as hovering does.
 - The scene container is `aria-hidden`, and `inert` is applied to the main
   landmark while the docs are open.
 - `prefers-reduced-motion` turns off board rotation, shortens camera moves to
   quick cuts, and opens the docs without the reveal.
 - Without WebGL (`supportsWebGL()` returns false), the scene is not mounted. The
-  page becomes a plain list of buttons.
+  headline and the legend then become visible, and the page is a plain list of
+  buttons.
 
 ## Styling
 
 `src/index.css` defines one set of tokens on `:root`: colours, fonts and the paper
 palette used by the datasheet page. The landing page is dark and the docs page is
-light, which makes the circle reveal read as a change of medium. Layout breakpoints
-are at 860 px (docs stack to one column) and 640 px (legend becomes a four-column
-grid, and the hero gets a dark fade for readability).
+light, which makes the circle reveal read as a change of medium. There are no
+responsive breakpoints, because only laptop-sized screens are supported.
+
+The scene's brightness comes from the lights and the environment in `SocScene.tsx`
+(ambient, hemisphere, two directional lights and the generated studio
+environment), plus the board and component colours in `textures.ts` and
+`Board.tsx`. Adjust those together: raising only the lights washes out the glow.
