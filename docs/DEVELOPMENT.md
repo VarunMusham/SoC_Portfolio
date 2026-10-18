@@ -66,7 +66,15 @@ The circle's radius must be the distance to the screen corner. Check
 animation happen before the first frame is drawn.
 
 **A refresh on `/ip/<slug>` returns 404.**
-The host lacks an SPA fallback. See the deployment section of the README.
+The host lacks an SPA fallback. See the deployment section of the README. On GitHub
+Pages the workflow provides it by copying `index.html` to `404.html`.
+
+**A local Pages build loads a blank page, or its assets 404.**
+Check three things. `VITE_BASE` must be set for both the build and the preview
+server, because `vite preview` reads it too. In Git Bash, a value starting with `/`
+is turned into a Windows path (you will see `/Program Files/Git/...` in
+`dist/index.html`), so prefix the command with `MSYS_NO_PATHCONV=1`. And restart
+`vite preview` after rebuilding, because it indexes `dist` at startup.
 
 **The 3D view is blank.**
 Check that WebGL is available. Open `chrome://gpu` or the equivalent. If it is

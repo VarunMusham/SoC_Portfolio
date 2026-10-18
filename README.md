@@ -86,14 +86,39 @@ src/
 
 ## Deployment
 
+### GitHub Pages (configured)
+
+The site deploys to https://varunmusham.github.io/SoC_Portfolio/ from the workflow in
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Every push to `main`
+type-checks, builds and publishes it. You can also run it by hand from the
+repository's **Actions** tab.
+
+Pages serves the site from `/SoC_Portfolio/`, so the workflow builds with
+`VITE_BASE=/SoC_Portfolio/`. `vite.config.ts` reads that variable as the Vite `base`,
+and `main.tsx` passes it to the router, so links and assets resolve under the subpath.
+Local development and plain builds are unaffected and stay at `/`. The workflow also
+copies `index.html` to `404.html`, so refreshing on `/SoC_Portfolio/ip/spi` still loads
+the app.
+
+To preview a Pages build locally:
+
+```bash
+VITE_BASE=/SoC_Portfolio/ npm run build
+VITE_BASE=/SoC_Portfolio/ npm run preview   # open http://localhost:4173/SoC_Portfolio/
+```
+
+On Windows, run those in PowerShell (`$env:VITE_BASE='/SoC_Portfolio/'`). Git Bash
+rewrites a value that starts with `/` into a file path, unless you prefix the command
+with `MSYS_NO_PATHCONV=1`.
+
+### Other hosts
+
 This is a single-page app with routes such as `/ip/spi`. The host must serve
 `index.html` for any path it does not recognise. Otherwise a refresh on `/ip/spi`
 returns a 404.
 
 - **Netlify:** add a `public/_redirects` file containing `/* /index.html 200`.
 - **Vercel:** works without configuration for Vite apps.
-- **GitHub Pages:** copy `dist/index.html` to `dist/404.html`, or switch to hash
-  routing. Serve from a subpath only after setting `base` in `vite.config.ts`.
 
 The 3D scene is code-split into its own chunk (about 1.1 MB, roughly 300 KB
 gzipped). The documentation pages do not download it.
