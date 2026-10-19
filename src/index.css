@@ -1,19 +1,21 @@
-/* Tokens. The landing page is dark (board view); the docs page is light (datasheet). */
+/* Tokens. The diagram follows the reference image (grey canvas, slate blocks, blue highlight);
+   the docs page is a light datasheet in the same cool palette. */
 :root {
-  --board-deep: #04060a;
-  --board-mid: #0a0f17;
-  --text: #e6e9ef;
-  --muted: #8d97a8;
-  --line: rgba(110, 160, 255, 0.16);
-  --panel: rgba(8, 11, 17, 0.7);
-  --signal: #4d9bff;
-  --gold: #d6a756;
+  --canvas: #dde2e8;
+  --panel: #eceff3;
+  --panel-rule: #c4cbd4;
+  --node: #4b535d;
+  --node-infra: #2c333b;
+  --node-text: #ffffff;
+  --bus: #3a424b;
+  --hot: #1a8fe3;
+  --ink-muted: #5d6874;
 
-  --paper: #f3f0e6;
-  --paper-ink: #13202a;
-  --paper-muted: #56656d;
-  --paper-rule: #d4cdbb;
-  --accent: #a4601a;
+  --paper: #f7f8fa;
+  --paper-ink: #131c26;
+  --paper-muted: #56626e;
+  --paper-rule: #d3d9e0;
+  --accent: #1470c2;
 
   --font-display: 'Instrument Serif', Georgia, serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
@@ -29,8 +31,8 @@
 html,
 body {
   margin: 0;
-  background: var(--board-deep);
-  color: var(--text);
+  background: var(--canvas);
+  color: var(--paper-ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
@@ -39,111 +41,6 @@ h1,
 h2 {
   margin: 0;
   font-weight: 400;
-}
-
-/* ---------- Landing: SoC board ---------- */
-
-.landing {
-  position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow: hidden;
-  background: radial-gradient(120% 90% at 60% 40%, #0f1a2b 0%, var(--board-mid) 45%, var(--board-deep) 100%);
-}
-
-.landing-scene {
-  position: absolute;
-  inset: 0;
-}
-
-.landing-scene canvas {
-  display: block;
-}
-
-.scene-labels {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.landing-hero {
-  position: relative;
-  z-index: 2;
-  max-width: 560px;
-  padding: clamp(24px, 5vw, 56px);
-  pointer-events: none;
-}
-
-.landing-hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(42px, 6vw, 80px);
-  line-height: 0.95;
-  letter-spacing: -0.01em;
-}
-
-.landing-hero p {
-  max-width: 40ch;
-  margin: 20px 0 0;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.55;
-}
-
-.legend {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 3;
-  padding: 0 clamp(24px, 5vw, 56px) clamp(20px, 4vw, 40px);
-}
-
-.legend ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.legend-item {
-  min-width: 68px;
-  padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  background: var(--panel);
-  backdrop-filter: blur(8px);
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-}
-
-.legend-item:hover:not(:disabled) {
-  box-shadow: 0 0 18px rgba(77, 155, 255, 0.25);
-}
-
-.legend-item:hover:not(:disabled) {
-  border-color: var(--signal);
-  background: rgba(16, 28, 48, 0.85);
-}
-
-.legend-item:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 3px;
-}
-
-.legend-item:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.legend-name {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--text);
 }
 
 .sr-only {
@@ -155,77 +52,120 @@ h2 {
   white-space: nowrap;
 }
 
-/*
- * With the 3D scene running, the IP list is visually hidden: the board is the interface.
- * It stays in the page for keyboard and screen-reader users, and appears while it has focus.
- */
-.landing:not(.landing--static) .legend:not(:focus-within) {
-  inset: auto auto 0 0;
-  width: 1px;
-  height: 1px;
-  padding: 0;
+/* ---------- Block diagram ---------- */
+
+.diagram-page {
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
-/* While the camera flies to a chip (and while its docs are open) the list steps aside. */
-.legend {
-  transition: opacity 0.45s ease;
+.diagram {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.landing--focused .legend {
-  opacity: 0;
+.frame {
+  fill: var(--panel);
+  stroke: var(--panel-rule);
+  stroke-width: 2;
+}
+
+.title {
+  fill: var(--paper-ink);
+  font-family: var(--font-display);
+  font-size: 46px;
+}
+
+.hint {
+  fill: var(--ink-muted);
+  font-size: 18px;
+}
+
+.soc-tag {
+  fill: var(--ink-muted);
+  font-family: var(--font-display);
+  font-size: 46px;
+}
+
+.bus {
+  stroke: var(--bus);
+  stroke-width: 3;
+}
+
+.bus-label {
+  fill: var(--paper-ink);
+  font-size: 22px;
+}
+
+.block {
+  stroke: none;
+  transition: fill 0.18s;
+}
+
+.block--infra {
+  fill: var(--node-infra);
+}
+
+.block--ip {
+  fill: var(--node);
+}
+
+.block-label {
+  fill: var(--node-text);
+  font-size: 24px;
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: central;
   pointer-events: none;
 }
 
-/* No WebGL: the legend becomes the whole page. */
-.landing--static {
-  display: flex;
-  flex-direction: column;
+/* Arrows carry data in both directions, so both ends get a head. */
+.link {
+  pointer-events: none;
 }
 
-.landing--static .legend {
-  position: relative;
-  padding-top: 8px;
+.link line {
+  stroke: var(--bus);
+  stroke-width: 3;
+  transition: stroke 0.18s;
 }
 
-/* Callouts above each IP chip: a name with a hairline leader dropping to the package. */
-.chip-callout {
-  position: relative;
-  display: inline-block;
-  padding: 2px 6px;
-  border-left: 1px solid rgba(140, 180, 255, 0.55);
-  background: rgba(4, 7, 12, 0.6);
-  color: rgba(226, 232, 242, 0.9);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.25s, transform 0.25s;
+.link polygon {
+  fill: var(--bus);
+  transition: fill 0.18s;
 }
 
-.chip-callout::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: -1px;
-  height: 26px;
-  border-left: 1px solid rgba(140, 180, 255, 0.35);
+.hit {
+  fill: transparent;
 }
 
-.chip-callout.is-hot {
-  border-left-color: var(--signal);
-  color: #ffffff;
-  opacity: 1;
-  transform: none;
+.ip-node {
+  cursor: pointer;
+  outline: none;
 }
 
-.chip-callout.is-hot::after {
-  border-left-color: var(--signal);
+.ip-node:hover .block--ip,
+.ip-node:focus-visible .block--ip {
+  fill: var(--hot);
+}
+
+.ip-node:hover .link line,
+.ip-node:focus-visible .link line {
+  stroke: var(--hot);
+}
+
+.ip-node:hover .link polygon,
+.ip-node:focus-visible .link polygon {
+  fill: var(--hot);
+}
+
+/* Blue alone is hard to tell from the hover state, so keyboard focus also gets a ring. */
+.ip-node:focus-visible .block--ip {
+  stroke: var(--paper-ink);
+  stroke-width: 4;
+  paint-order: stroke;
 }
 
 /* ---------- Docs: datasheet page ---------- */
@@ -257,7 +197,7 @@ h2 {
   gap: 12px 16px;
   padding: 14px clamp(16px, 4vw, 48px);
   border-bottom: 1px solid var(--paper-rule);
-  background: rgba(243, 240, 230, 0.92);
+  background: rgba(247, 248, 250, 0.92);
   backdrop-filter: blur(8px);
 }
 
@@ -464,8 +404,9 @@ td {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .legend-item,
-  .chip-callout {
+  .block,
+  .link line,
+  .link polygon {
     transition: none;
   }
 }

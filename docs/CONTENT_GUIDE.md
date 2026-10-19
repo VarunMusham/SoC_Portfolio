@@ -1,8 +1,8 @@
 # Content guide
 
-Each IP block has one entry in `src/data/ips.ts`. The landing page builds the
-legend and the 3D chips from this array, and each entry gets its own documentation
-page at `/ip/<slug>`.
+Each IP block has one entry in `src/data/ips.ts`. The diagram builds its
+peripheral blocks from this array, and each entry gets its own documentation page at
+`/ip/<slug>`.
 
 > The shipped content is **placeholder**. The register offsets, reset values,
 > signal lists and descriptions are illustrative and must be replaced with values
@@ -33,10 +33,10 @@ page at `/ip/<slug>`.
 | Field | Type | Where it appears | Notes |
 | --- | --- | --- | --- |
 | `slug` | string | URL (`/ip/<slug>`), React keys | Lowercase, URL-safe, unique. Changing it breaks existing links. |
-| `name` | string | Chip lid, hover label, and the hidden legend button | Keep it short. Names of three characters or fewer are printed larger on the lid. |
+| `name` | string | Block label in the diagram and the link's accessible name | Keep it short, so it fits in the box. `SD6/eMMC` is about the longest that fits. |
 | `fullName` | string | Documentation page heading | |
-| `summary` | string | Documentation page, and read by screen readers from the legend | One sentence. |
-| `version` | string | Chip lid (uppercased) and the documentation metadata | Your IP revision, for example `r2p1`. |
+| `summary` | string | Documentation page, and read by screen readers as part of the block's link | One sentence. |
+| `version` | string | Documentation metadata | Your IP revision, for example `r2p1`. |
 | `overview` | string[] | Overview section | One string per paragraph. |
 | `features` | string[] | Features list | Short phrases. |
 | `registers` | RegisterRow[] | Register map table | See below. |
@@ -63,11 +63,13 @@ page at `/ip/<slug>`.
 
 ## Adding or removing a block
 
-1. Add or remove an entry in the `ips` array. Keep the order you want on the ring.
-2. Nothing else needs changing. The legend, the 3D ring, the bus lines and the
+1. Add or remove an entry in the `ips` array. The order is the left-to-right order on the
+   APB bus. Neighbours alternate between the two rows.
+2. Nothing else needs changing. The diagram, its arrows, the keyboard order and the
    documentation routes are all generated from the array.
-3. Check the result with `npm run dev`. The ring spacing is tuned for eight blocks.
-   More blocks have not been tested, and the bus and label layout may need tuning.
+3. Check the result with `npm run dev`. Columns are spaced evenly, so the boxes get
+   closer as the count grows. Past about fifteen, narrow `PERIPHERAL_SIZE` in
+   `src/diagram/layout.ts`.
 
 ## Writing tips
 

@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { findIp, ips } from '../data/ips';
 import { prefersReducedMotion } from '../lib/motion';
-
-type OriginState = { origin?: { x: number; y: number } } | null;
+import { blockOrigin } from '../lib/origin';
 
 // Radius that just covers the viewport from (x, y). Anything larger makes most of the animation invisible.
 function coverRadius(x: number, y: number): number {
@@ -25,19 +24,22 @@ const sections = [
 export default function IpPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const rootRef = useRef<HTMLDivElement>(null);
+  // Read by the reveal and close animations, which must not restart when the slug changes.
+  const slugRef = useRef(slug);
+  useEffect(() => {
+    slugRef.current = slug;
+  }, [slug]);
 
   const ip = findIp(slug);
   const index = ips.findIndex((item) => item.slug === slug);
-  const origin = (location.state as OriginState)?.origin ?? null;
 
-  // Reveal: the page opens as a circle that grows out from the chip the camera flew into.
+  // Reveal: the page opens as a circle that grows out from the block it belongs to.
+  // Only on first open: paging between blocks swaps the content in place.
   useEffect(() => {
     const el = rootRef.current;
-    if (!el) return;
-    el.scrollTop = 0;
-    if (!origin || prefersReducedMotion()) return;
+    const origin = slugRef.current ? blockOrigin(slugRef.current) : null;
+    if (!el || !origin || prefersReducedMotion()) return;
     const { x, y } = origin;
     const reveal = el.animate(
       [
@@ -48,10 +50,13 @@ export default function IpPage() {
     );
     reveal.onfinish = () => reveal.cancel();
     return () => reveal.cancel();
-  }, [origin, slug]);
+  }, []);
 
-  // Close: the page shrinks back into the chip (or fades, if it was not opened from one),
-  // then the map behind it zooms out.
+  useEffect(() => {
+    if (rootRef.current) rootRef.current.scrollTop = 0;
+  }, [slug]);
+
+  // Close: the page shrinks back into its block, then navigates to the diagram.
   const closingRef = useRef(false);
   const close = useCallback(() => {
     const el = rootRef.current;
@@ -61,6 +66,7 @@ export default function IpPage() {
       return;
     }
     closingRef.current = true;
+    const origin = blockOrigin(slugRef.current ?? '');
     const keyframes = origin
       ? [
           { clipPath: `circle(${coverRadius(origin.x, origin.y)}px at ${origin.x}px ${origin.y}px)` },
@@ -73,7 +79,7 @@ export default function IpPage() {
       fill: 'forwards',
     });
     exit.onfinish = () => navigate('/');
-  }, [navigate, origin]);
+  }, [navigate]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -92,7 +98,7 @@ export default function IpPage() {
     <div className="doc" ref={rootRef}>
       <header className="doc-bar">
         <button type="button" className="doc-back" onClick={close}>
-          Back to SoC map <kbd>Esc</kbd>
+          Back to block diagram <kbd>Esc</kbd>
         </button>
         <nav className="doc-pager" aria-label="Other IP blocks">
           {prev && <Link to={`/ip/${prev.slug}`}>{prev.name}</Link>}

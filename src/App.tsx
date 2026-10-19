@@ -1,12 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Landing from './pages/Landing';
+import Diagram from './pages/Diagram';
 import IpPage from './pages/IpPage';
 
-// The SoC map stays mounted under the docs, so pages open from and close back into the live scene.
+// The diagram stays mounted under the docs, so pages open from and close back into their block.
 export default function App() {
   return (
     <>
-      <Landing />
+      <Diagram />
       <Routes>
         <Route path="/" element={null} />
         <Route path="/ip/:slug" element={<IpPage />} />

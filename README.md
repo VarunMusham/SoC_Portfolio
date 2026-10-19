@@ -1,28 +1,32 @@
-# SoC Legacy IP Portfolio
+# System-Level Block Design
 
-An interactive portfolio for legacy SoC peripheral IP. The landing page renders a
-slowly rotating system-on-chip on a circuit board, with its IP blocks (SPI, I2C,
-UART, GPIO, TTC, WDT, DMA, CAN) as chip packages around it. Click a chip and the
-camera flies into it. Its documentation then opens as a circle that grows out of
-the chip, over the live scene.
+An interactive 2D block diagram of an SoC. Two CPUs share an AHB bus, an AHB2APB
+bridge steps down to the APB bus, and thirteen peripheral IP blocks hang off it:
+UART, I2C, SPI, I2S, xSPI, QSPI, PWM, RTC, TTC, WDT, SD4, SD6/eMMC and GPIO. Click a
+block and its documentation opens as a circle that grows out of the block, over the
+diagram.
 
-![Landing page](docs/assets/landing.png)
+The layout follows the reference diagram in
+[`docs/assets/reference-diagram.jpg`](docs/assets/reference-diagram.jpg), with two
+simplifications: one AHB bus instead of separate master and slave buses, and no AHBC
+block between them.
+
+![Block diagram](docs/assets/landing.png)
 
 ![Documentation page](docs/assets/docs-page.png)
 
 ## Features
 
-- Real-time 3D board built with React Three Fiber, with bloom, depth of field and
-  tone mapping.
-- Camera flight into a chip, and a clip-path reveal that starts from the chip's
-  position on screen. Esc or the back button reverses both.
-- Deep links (`/ip/spi`) and browser history work. The camera always follows the URL.
-- A clean landing view with no text: just the board. A visually hidden list of the
-  IP blocks gives keyboard and screen-reader access (press Tab to see it). The 3D
-  scene itself is hidden from assistive technology.
-- Built for laptop-sized screens only (checked at 1366x768, 1536x864 and 1920x1080).
-- Reduced-motion support, a no-WebGL fallback, and automatic render-quality
-  scaling.
+- One SVG diagram that scales to the screen, so the layout is identical at 1366x768,
+  1536x864 and 1920x1080.
+- Peripherals alternate between two rows, as in the reference, so thirteen blocks fit on
+  one bus.
+- Hover or keyboard focus turns a block and its bus arrow blue.
+- A clip-path reveal that starts from the clicked block. Esc or the back button reverses it.
+- Deep links (`/ip/spi`) and browser history work.
+- Keyboard and screen-reader access: every peripheral is a real link with its summary as
+  its label, and focus returns to the block when the docs close.
+- Reduced-motion support.
 - All documentation lives in one typed data file.
 
 ## Quick start
@@ -58,49 +62,40 @@ See [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md) for the field-by-field refere
 | Document | Contents |
 | --- | --- |
 | [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md) | How to write and add IP documentation |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Component map, camera and transition flow, rendering pipeline |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Working on the code: testing, render quality, known limitations, troubleshooting |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Component map, diagram layout and the open and close transition |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Working on the code: testing, known limitations, troubleshooting |
 
 ## Project layout
 
 ```
 src/
-  App.tsx              routes; the scene stays mounted under the docs
+  App.tsx              routes; the diagram stays mounted under the docs
   main.tsx             entry point (BrowserRouter)
   index.css            design tokens and all styles
   data/ips.ts          IP documentation (edit this)
-  lib/motion.ts        reduced-motion and WebGL detection
+  diagram/layout.ts    coordinates for the buses, infrastructure blocks and peripherals
+  lib/motion.ts        reduced-motion detection
+  lib/origin.ts        on-screen position of a block, for the reveal
   pages/
-    Landing.tsx        hidden headline and IP list, lazy-loaded 3D scene
+    Diagram.tsx        the SVG block diagram
     IpPage.tsx         documentation page and circle reveal
-  scene/
-    SocScene.tsx       canvas, lighting, camera flights, post-processing
-    MainChip.tsx       the SoC package
-    IpChip.tsx         one IP package with hover lift
-    Board.tsx          board laminate, components and status LEDs
-    Streaks.tsx        shader for travelling light along traces
-    textures.ts        procedural circuit, board and lid textures
-    layout.ts          ring geometry and placement rules
-    pins.ts            shared pin and pad helpers
 ```
 
 ## Deployment
 
-### GitHub Pages (configured)
+### GitHub Pages
 
-The site deploys to https://varunmusham.github.io/SoC_Portfolio/ from the workflow in
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Every push to `main`
-type-checks, builds and publishes it. You can also run it by hand from the
-repository's **Actions** tab.
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds and publishes the
+site on every push to `main`. This branch is not published until it is merged there.
 
-Pages serves the site from `/SoC_Portfolio/`, so the workflow builds with
-`VITE_BASE=/SoC_Portfolio/`. `vite.config.ts` reads that variable as the Vite `base`,
+Pages serves the site from `/<repository>/`, so the workflow builds with
+`VITE_BASE=/<repository>/`. `vite.config.ts` reads that variable as the Vite `base`,
 and `main.tsx` passes it to the router, so links and assets resolve under the subpath.
 Local development and plain builds are unaffected and stay at `/`. The workflow also
-copies `index.html` to `404.html`, so refreshing on `/SoC_Portfolio/ip/spi` still loads
+copies `index.html` to `404.html`, so refreshing on `/<repository>/ip/spi` still loads
 the app.
 
-To preview a Pages build locally:
+To preview a Pages build locally (use the repository name in place of `SoC_Portfolio`):
 
 ```bash
 VITE_BASE=/SoC_Portfolio/ npm run build
@@ -120,21 +115,8 @@ returns a 404.
 - **Netlify:** add a `public/_redirects` file containing `/* /index.html 200`.
 - **Vercel:** works without configuration for Vite apps.
 
-The 3D scene is code-split into its own chunk (about 1.1 MB, roughly 300 KB
-gzipped). The documentation pages do not download it.
-
-Fonts (Instrument Serif, IBM Plex Sans and IBM Plex Mono) load from Google Fonts.
-
-## Skills used during development
-
-Two agent skills were installed with `npx skills` and are **not** committed:
-
-```bash
-npx skills add anthropics/skills@frontend-design
-npx skills add freshtechbro/claudedesignskills@react-three-fiber
-```
-
-`skills-lock.json` records their sources and hashes.
+The production bundle is about 290 KB (90 KB gzipped). Fonts (Instrument Serif, IBM Plex
+Sans and IBM Plex Mono) load from Google Fonts.
 
 ## License
 
