@@ -692,3 +692,152 @@ td {
   font-family: var(--font-mono);
   font-size: 13px;
 }
+
+/* ---------- 3D stage ---------- */
+
+.stage {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--canvas);
+}
+
+.stage-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.stage-canvas canvas {
+  display: block;
+}
+
+/* The words over the scene. They never take pointer events, so the board underneath stays clickable. */
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-out);
+}
+
+.stage--focused .hud {
+  opacity: 0;
+}
+
+.hud-title {
+  position: absolute;
+  top: 5.5vh;
+  left: 4.4vw;
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.9vw, 46px);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.hud-hint {
+  position: absolute;
+  top: calc(5.5vh + clamp(28px, 2.9vw, 46px) * 2.4);
+  left: 4.4vw;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: clamp(13px, 1.1vw, 17px);
+}
+
+.hud-tag {
+  position: absolute;
+  top: 5.5vh;
+  right: 4.4vw;
+  color: var(--ink-muted);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.hud-key {
+  position: absolute;
+  bottom: 4.5vh;
+  left: 4.4vw;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: clamp(12px, 1vw, 15px);
+}
+
+.hud-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.hud-dot--request {
+  background: var(--pulse);
+  box-shadow: 0 0 8px var(--pulse);
+}
+
+.hud-dot--response {
+  margin-left: 12px;
+  background: var(--pulse-response);
+  box-shadow: 0 0 8px var(--pulse-response);
+}
+
+/* The list is visually hidden until it has keyboard focus, then it appears along the bottom edge. */
+.legend {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 3;
+  padding: 0 4.4vw 3.5vh;
+}
+
+.legend:not(:focus-within) {
+  inset: auto auto 0 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.legend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-item {
+  min-width: 72px;
+  padding: 10px 16px;
+  border: 1px solid var(--panel-rule);
+  border-radius: 12px;
+  background: rgba(20, 26, 34, 0.78);
+  backdrop-filter: blur(18px) saturate(1.5);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.legend-item:focus-visible {
+  outline: 2px solid var(--hot);
+  outline-offset: 3px;
+}
+
+.legend-item:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.legend-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}

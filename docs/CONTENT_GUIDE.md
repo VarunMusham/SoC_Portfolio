@@ -1,7 +1,7 @@
 # Content guide
 
 Each IP block has one entry in `src/data/ips.ts`. The diagram builds its
-peripheral blocks from this array, and each entry gets its own documentation page at
+peripheral blocks (in 3D and flat) from this array, and each entry gets its own documentation page at
 `/ip/<slug>`.
 
 > The shipped content is **placeholder**. The register offsets, reset values,
@@ -33,7 +33,7 @@ peripheral blocks from this array, and each entry gets its own documentation pag
 | Field | Type | Where it appears | Notes |
 | --- | --- | --- | --- |
 | `slug` | string | URL (`/ip/<slug>`), React keys | Lowercase, URL-safe, unique. Changing it breaks existing links. |
-| `name` | string | Block label in the diagram and the link's accessible name | Keep it short, so it fits in the box. `SD6/eMMC` is about the longest that fits. |
+| `name` | string | Label on the block, and the accessible name of its link | Keep it short, so it fits on the block. `SD6/eMMC` is about the longest that fits; longer names shrink to fit. |
 | `fullName` | string | Documentation page heading | |
 | `summary` | string | Documentation page, and read by screen readers as part of the block's link | One sentence. |
 | `version` | string | Documentation metadata | Your IP revision, for example `r2p1`. |

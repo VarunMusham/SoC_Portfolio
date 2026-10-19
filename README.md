@@ -1,21 +1,17 @@
 # System-Level Block Design
 
-An interactive 2D block diagram of an SoC. Two CPUs share an AHB bus, an AHB2APB
-bridge steps down to the APB bus, and thirteen peripheral IP blocks hang off it:
-UART, I2C, SPI, I2S, xSPI, QSPI, PWM, RTC, TTC, WDT, SD4, SD6/eMMC and GPIO. Click a
-block and its documentation opens as a circle that grows out of the block, over the
-diagram.
-
-The diagram is alive: request pulses travel from the CPUs down to the peripherals and
-responses travel back, blocks lift on hover, and the route to the hovered block lights up.
-The look is a dark, glass-and-hairline style that follows Apple's published design guidance.
+An interactive 3D block diagram of an SoC. Two CPUs share an AHB bus on a raised tier, an
+AHB2APB bridge steps down to the APB tier, and thirteen peripheral IP blocks sit on it: UART,
+I2C, SPI, I2S, xSPI, QSPI, PWM, RTC, TTC, WDT, SD4, SD6/eMMC and GPIO. Light travels the wires,
+blocks lift when you point at them, and a click flies the camera in. The block's documentation
+then opens as a circle that grows out of it.
 
 The layout follows the reference diagram in
 [`docs/assets/reference-diagram.jpg`](docs/assets/reference-diagram.jpg), with two
 simplifications: one AHB bus instead of separate master and slave buses, and no AHBC
-block between them.
+block between them. The flat 2D version of the same diagram is kept as the fallback.
 
-![Block diagram, with a request wave crossing the APB bus](docs/assets/landing.png)
+![The 3D diagram, with traffic crossing the buses](docs/assets/landing.png)
 
 ![Hovering a block lifts it and lights its route](docs/assets/hover.png)
 
@@ -23,22 +19,21 @@ block between them.
 
 ## Features
 
-- One SVG diagram that scales to the screen, so the layout is identical at 1366x768,
-  1536x864 and 1920x1080.
-- Peripherals alternate between two rows, as in the reference, so thirteen blocks fit on
-  one bus.
-- **Electric flow.** Pulses cross the buses and arrows in a 9-second loop: a request goes
-  CPU, AHB, bridge, APB, peripheral, then the response returns. A block glows where the
-  wave lands, and the timing comes from the layout geometry.
-- **Lift.** Hover or keyboard focus lifts a block with a spring, turns it blue and lights the
-  route from the bridge to it.
-- **Entrance.** On load the buses draw in and the blocks rise in turn.
-- Dark theme, with Reduce Motion, Reduce Transparency and Increase Contrast respected.
-- A clip-path reveal that starts from the clicked block. Esc or the back button reverses it.
-- Deep links (`/ip/spi`) and browser history work.
-- Keyboard and screen-reader access: every peripheral is a real link with its summary as
-  its label, and focus returns to the block when the docs close.
-- Reduced-motion support.
+- **Height means hierarchy.** The CPUs and AHB bus sit on a raised glass tier; the APB bus and
+  the peripherals on a lower one. The step between them is lit.
+- **Electric flow.** A 9-second loop sends light from the CPUs down to the peripherals, then
+  back. It is a shader on the wires, so it costs one draw call.
+- **Lift.** Pointing at a block lifts it on a spring, turns it blue, dims the others, casts a
+  blue wash on the tier and lights the route from the bridge to it.
+- **Camera.** The scene opens with a dolly in from above while the tiers rise and the blocks
+  drop into place. The camera then leans gently toward the pointer. A click flies it over the
+  board to the block, and the docs open from there. Esc flies it back.
+- Deep links (`/ip/spi`) and browser history work. The camera follows the URL.
+- Keyboard and screen-reader access: a visually hidden list of links gives the same choice as
+  the scene (press Tab to see it). The 3D canvas itself is hidden from assistive technology.
+- Reduce Motion removes the intro, the parallax and the travelling light, and turns flights into
+  quick cuts. Quality scales down automatically on slow machines.
+- Without WebGL the flat 2D diagram is shown instead, and `?view=2d` forces it.
 - All documentation lives in one typed data file.
 
 ## Quick start
@@ -85,13 +80,23 @@ src/
   main.tsx             entry point (BrowserRouter)
   index.css            design tokens and all styles
   data/ips.ts          IP documentation (edit this)
-  diagram/layout.ts    coordinates for the buses, infrastructure blocks and peripherals
-  diagram/flow.ts      the traffic schedule: pulses, timings and the hover route
-  lib/motion.ts        reduced-motion detection
+  diagram/layout.ts    2D coordinates for the buses, infrastructure blocks and peripherals
+  diagram/flow.ts      the traffic schedule: pulses, timings and arrival times
+  lib/motion.ts        reduced-motion and WebGL detection, easing functions
   lib/origin.ts        on-screen position of a block, for the reveal
   pages/
-    Diagram.tsx        the SVG block diagram
+    Landing.tsx        chooses 3D or flat; the 3D stage, the title and the hidden list
+    Diagram.tsx        the flat SVG diagram (fallback)
     IpPage.tsx         documentation page and circle reveal
+  scene/
+    SocScene.tsx       canvas, camera director, lighting, post-processing
+    world.ts           the 2D layout stood up in 3D: tiers, heights, wire paths
+    Stage.tsx          board, surrounding components, tiers and bus rails
+    Block.tsx          a glass block: lift spring, label, shadow and arrival flash
+    Wires.tsx          conduits, travelling light and the hover route
+    wires.ts           wire geometry and the light shaders
+    textures.ts        canvas-generated labels, tier surfaces and board
+    state.ts           shared per-frame state and the intro timeline
 ```
 
 ## Deployment
@@ -128,7 +133,9 @@ returns a 404.
 - **Netlify:** add a `public/_redirects` file containing `/* /index.html 200`.
 - **Vercel:** works without configuration for Vite apps.
 
-The production bundle is about 290 KB (90 KB gzipped). Fonts (Inter and IBM Plex Mono) load from
+The app shell is about 300 KB (93 KB gzipped). The 3D scene is code-split into its own chunk
+(about 1.1 MB, roughly 300 KB gzipped), so the documentation pages and the flat fallback do not
+download it. Fonts (Inter and IBM Plex Mono) load from
 Google Fonts. On Apple devices the system font (SF Pro) is used first.
 
 ## License
