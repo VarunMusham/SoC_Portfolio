@@ -11,7 +11,8 @@ function coverRadius(x: number, y: number): number {
   return Math.ceil(Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y))) + 2;
 }
 
-const EASE_IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)';
+// A long ease-out: the circle leaves fast and settles softly, like a system sheet.
+const EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
 const sections = [
   { id: 'overview', label: 'Overview' },
@@ -46,7 +47,7 @@ export default function IpPage() {
         { clipPath: `circle(0px at ${x}px ${y}px)` },
         { clipPath: `circle(${coverRadius(x, y)}px at ${x}px ${y}px)` },
       ],
-      { duration: 900, easing: EASE_IN_OUT },
+      { duration: 900, easing: EASE },
     );
     reveal.onfinish = () => reveal.cancel();
     return () => reveal.cancel();
@@ -75,7 +76,7 @@ export default function IpPage() {
       : [{ opacity: 1 }, { opacity: 0 }];
     const exit = el.animate(keyframes, {
       duration: origin ? 700 : 350,
-      easing: EASE_IN_OUT,
+      easing: EASE,
       fill: 'forwards',
     });
     exit.onfinish = () => navigate('/');

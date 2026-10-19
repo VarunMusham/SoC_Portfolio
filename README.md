@@ -6,12 +6,18 @@ UART, I2C, SPI, I2S, xSPI, QSPI, PWM, RTC, TTC, WDT, SD4, SD6/eMMC and GPIO. Cli
 block and its documentation opens as a circle that grows out of the block, over the
 diagram.
 
+The diagram is alive: request pulses travel from the CPUs down to the peripherals and
+responses travel back, blocks lift on hover, and the route to the hovered block lights up.
+The look is a dark, glass-and-hairline style that follows Apple's published design guidance.
+
 The layout follows the reference diagram in
 [`docs/assets/reference-diagram.jpg`](docs/assets/reference-diagram.jpg), with two
 simplifications: one AHB bus instead of separate master and slave buses, and no AHBC
 block between them.
 
-![Block diagram](docs/assets/landing.png)
+![Block diagram, with a request wave crossing the APB bus](docs/assets/landing.png)
+
+![Hovering a block lifts it and lights its route](docs/assets/hover.png)
 
 ![Documentation page](docs/assets/docs-page.png)
 
@@ -21,7 +27,13 @@ block between them.
   1536x864 and 1920x1080.
 - Peripherals alternate between two rows, as in the reference, so thirteen blocks fit on
   one bus.
-- Hover or keyboard focus turns a block and its bus arrow blue.
+- **Electric flow.** Pulses cross the buses and arrows in a 9-second loop: a request goes
+  CPU, AHB, bridge, APB, peripheral, then the response returns. A block glows where the
+  wave lands, and the timing comes from the layout geometry.
+- **Lift.** Hover or keyboard focus lifts a block with a spring, turns it blue and lights the
+  route from the bridge to it.
+- **Entrance.** On load the buses draw in and the blocks rise in turn.
+- Dark theme, with Reduce Motion, Reduce Transparency and Increase Contrast respected.
 - A clip-path reveal that starts from the clicked block. Esc or the back button reverses it.
 - Deep links (`/ip/spi`) and browser history work.
 - Keyboard and screen-reader access: every peripheral is a real link with its summary as
@@ -74,6 +86,7 @@ src/
   index.css            design tokens and all styles
   data/ips.ts          IP documentation (edit this)
   diagram/layout.ts    coordinates for the buses, infrastructure blocks and peripherals
+  diagram/flow.ts      the traffic schedule: pulses, timings and the hover route
   lib/motion.ts        reduced-motion detection
   lib/origin.ts        on-screen position of a block, for the reveal
   pages/
@@ -115,8 +128,8 @@ returns a 404.
 - **Netlify:** add a `public/_redirects` file containing `/* /index.html 200`.
 - **Vercel:** works without configuration for Vite apps.
 
-The production bundle is about 290 KB (90 KB gzipped). Fonts (Instrument Serif, IBM Plex
-Sans and IBM Plex Mono) load from Google Fonts.
+The production bundle is about 290 KB (90 KB gzipped). Fonts (Inter and IBM Plex Mono) load from
+Google Fonts. On Apple devices the system font (SF Pro) is used first.
 
 ## License
 

@@ -29,7 +29,8 @@ URL ──▶  Diagram (always mounted, inert while docs are open)
 | --- | --- |
 | `src/data/ips.ts` | The only source of documentation content. Typed as `IpDoc`. |
 | `src/diagram/layout.ts` | Coordinates for the CPUs, buses, bridge and peripherals, in one 1600x900 space. |
-| `src/pages/Diagram.tsx` | Draws the SVG. Each peripheral is a router `Link` around its box and arrow. |
+| `src/diagram/flow.ts` | The traffic schedule: every pulse with its start and duration, the arrival times, the hover route, and the generated keyframes. |
+| `src/pages/Diagram.tsx` | Draws the SVG. Each peripheral is a router `Link` around its glass block. |
 | `src/pages/IpPage.tsx` | The documentation page. Runs the reveal and close animations with the Web Animations API. |
 | `src/lib/origin.ts` | Finds a block's centre on screen from the DOM. |
 | `src/lib/motion.ts` | Reduced-motion detection. |
@@ -72,24 +73,64 @@ which keeps the picture identical at the supported laptop sizes (1366x768, 1536x
 `blockOrigin` measures the block's `rect`, not the link. The link's box also spans the
 arrow up to the bus, so its centre would be in the wrong place.
 
+## Animation
+
+**Traffic.** `flow.ts` builds one 9-second loop from the layout. A request leaves each CPU,
+merges on the AHB bus, crosses the bridge and spreads along the APB bus. Each peripheral arrow
+lights as the wave passes its tap, so far blocks are reached later. The response is the same
+schedule reversed in direction and in time, drawn in mint instead of blue.
+
+Each pulse is a short dash on a wire, measured against `pathLength="100"` so one keyframe shape
+fits every wire. `flowCss()` generates a keyframe per pulse that holds the dash off-screen except
+during its slot in the loop. The animations are plain CSS, so the browser can pause them and
+there is no per-frame JavaScript. Both the CSS and the schedule use `CYCLE`, passed to the CSS
+as `--cycle`.
+
+**Arrival flash.** Each block has a `.flash` overlay that uses the same loop with its own
+`animation-delay`, so it glows when the wave lands.
+
+**Lift.** Hover and keyboard focus scale the block by 1.09 from its top edge, so it stays joined
+to its arrow. The shadow deepens at the same time. The easing is a damped spring, sampled as a CSS
+`linear()` curve with a cubic-bezier fallback.
+
+**Route.** The pointer or focus on a block lights the path from the bridge, along the APB bus, to
+that block: a dim solid line with a bright dash running along it. It fades out after the pointer
+leaves, which is why the last route stays in the DOM.
+
+**Entrance.** On load the frame fades in, the buses draw themselves, and the blocks rise one by one.
+
+**Pausing.** One second after the docs open, the diagram is marked `is-covered` and every
+animation is paused. It resumes when the docs close.
+
 ## Interaction states
 
-A peripheral turns blue (`--hot`) on hover and on keyboard focus, along with its arrow.
-Focus also draws a dark ring around the block, because blue alone is hard to tell from
-hover. A transparent strip around each arrow makes the arrow part of the hit area.
+A peripheral turns blue (`--hot`) on hover and on keyboard focus. Focus also draws a white ring
+around the block, because blue alone is hard to tell from hover. A transparent strip between the
+bus and each block makes the arrow part of the hit area.
 
 ## Accessibility and fallbacks
 
 - A visually hidden `h1` names the page. The SVG is a `group` with a label, and each
   peripheral link is labelled with its name and summary.
 - Tab walks the peripherals in `ips` order, which is also left-to-right order.
-- `prefers-reduced-motion` opens and closes the docs without the circle, and removes
-  the colour transitions.
+- **Reduce Motion** removes the travelling pulses, the arrival flash, the lift and the entrance,
+  and opens and closes the docs without the circle. Hover state still shows through colour.
+- **Reduce Transparency** removes the glass gradient, the shadows and the glow.
+- **Increase Contrast** brightens the wires and block rims.
 - Nothing needs WebGL or any other special capability, so there is no fallback view.
 
 ## Styling
 
-`src/index.css` defines one set of tokens on `:root`. The diagram uses the grey canvas,
-slate blocks and blue highlight from the reference image. The docs page is a light
-datasheet in the same cool palette. There are no responsive breakpoints, because only
-laptop-sized screens are supported.
+`src/index.css` defines one set of tokens on `:root`. The look is a dark appearance in the
+style of Apple's interfaces: near-black surfaces separated by hairlines, a single system blue
+(`#0a84ff`) for interaction, light-on-dark glass blocks with a lit rim, a rounded-corner radius
+of 14, and spring motion. Type uses the system font first (SF Pro on Apple devices) and Inter
+elsewhere. The docs page is the same palette, one step lighter, so the circle reveal is visible
+against the diagram.
+
+This follows Apple's published guidance (the Human Interface Guidelines, the Liquid Glass
+material and its motion principles, and the Reduce Motion, Reduce Transparency and Increase
+Contrast settings). It is an interpretation for the web, not a certified implementation. No
+WWDC 2026 specific guidance was available to check against.
+
+There are no responsive breakpoints, because only laptop-sized screens are supported.

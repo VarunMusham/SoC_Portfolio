@@ -1,25 +1,45 @@
-/* Tokens. The diagram follows the reference image (grey canvas, slate blocks, blue highlight);
-   the docs page is a light datasheet in the same cool palette. */
+/*
+ * Tokens. A dark, restrained palette in the style of Apple's dark appearance: near-black
+ * surfaces separated by hairlines, one system blue for interaction, and light-on-dark glass
+ * for blocks. The docs page uses the same tokens, one step lighter.
+ */
 :root {
-  --canvas: #dde2e8;
-  --panel: #eceff3;
-  --panel-rule: #c4cbd4;
-  --node: #4b535d;
-  --node-infra: #2c333b;
-  --node-text: #ffffff;
-  --bus: #3a424b;
-  --hot: #1a8fe3;
-  --ink-muted: #5d6874;
+  color-scheme: dark;
 
-  --paper: #f7f8fa;
-  --paper-ink: #131c26;
-  --paper-muted: #56626e;
-  --paper-rule: #d3d9e0;
-  --accent: #1470c2;
+  --canvas: #05070a;
+  --panel: #0b0e13;
+  --panel-rule: rgba(255, 255, 255, 0.08);
+  --node: #161b23;
+  --node-infra: #1d242e;
+  --node-text: #f5f7fa;
+  --node-text-infra: #aeb8c7;
+  --wire: #323c4a;
+  --pulse: #66b8ff;
+  --pulse-response: #5eeac4;
+  --hot: #0a84ff;
+  --ink: #f5f7fa;
+  --ink-muted: #8a95a6;
 
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --paper: #0e1217;
+  --paper-ink: #f2f5f9;
+  --paper-muted: #97a2b3;
+  --paper-rule: #232b36;
+  --accent: #4aa3ff;
+
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'IBM Plex Mono', monospace;
+
+  /* Motion: a springy settle for things that lift, a long ease-out for things that travel. */
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* A damped spring sampled as an easing curve. Browsers without linear() keep the bezier above. */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(0, 0.1005, 0.3247, 0.5794, 0.8048, 0.9718, 1.074, 1.1197, 1.1242, 1.104, 1.073, 1.0416, 1.0157, 0.9977, 0.9877, 0.9842, 0.985, 0.9883, 0.9923, 0.9961, 0.999, 1.0009, 1.0018, 1.002, 1.0018, 1.0013, 1.0008, 1.0003, 1);
+  }
 }
 
 *,
@@ -32,7 +52,7 @@ html,
 body {
   margin: 0;
   background: var(--canvas);
-  color: var(--paper-ink);
+  color: var(--ink);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
@@ -40,7 +60,7 @@ body {
 h1,
 h2 {
   margin: 0;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .sr-only {
@@ -69,56 +89,43 @@ h2 {
 .frame {
   fill: var(--panel);
   stroke: var(--panel-rule);
-  stroke-width: 2;
+  stroke-width: 1.5;
 }
 
 .title {
-  fill: var(--paper-ink);
+  fill: var(--ink);
   font-family: var(--font-display);
-  font-size: 46px;
+  font-size: 44px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
 }
 
 .hint {
   fill: var(--ink-muted);
   font-size: 18px;
+  letter-spacing: -0.005em;
 }
 
 .soc-tag {
   fill: var(--ink-muted);
   font-family: var(--font-display);
-  font-size: 46px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .bus {
-  stroke: var(--bus);
+  stroke: var(--wire);
   stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
 }
 
 .bus-label {
-  fill: var(--paper-ink);
-  font-size: 22px;
-}
-
-.block {
-  stroke: none;
-  transition: fill 0.18s;
-}
-
-.block--infra {
-  fill: var(--node-infra);
-}
-
-.block--ip {
-  fill: var(--node);
-}
-
-.block-label {
-  fill: var(--node-text);
-  font-size: 24px;
+  fill: var(--ink-muted);
+  font-size: 20px;
   font-weight: 500;
-  text-anchor: middle;
-  dominant-baseline: central;
-  pointer-events: none;
+  letter-spacing: 0.04em;
 }
 
 /* Arrows carry data in both directions, so both ends get a head. */
@@ -127,15 +134,149 @@ h2 {
 }
 
 .link line {
-  stroke: var(--bus);
+  stroke: var(--wire);
   stroke-width: 3;
-  transition: stroke 0.18s;
 }
 
 .link polygon {
-  fill: var(--bus);
-  transition: fill 0.18s;
+  fill: var(--wire);
 }
+
+/* ---------- Blocks ---------- */
+
+.block-base {
+  transition: fill 0.25s var(--ease-out);
+}
+
+.lift--infra .block-base {
+  fill: var(--node-infra);
+}
+
+.lift--ip .block-base {
+  fill: var(--node);
+}
+
+.block-glass {
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.shadow {
+  fill: #000;
+  opacity: 0.5;
+  transform: translateY(10px);
+}
+
+.block-label {
+  fill: var(--node-text);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.lift--infra .block-label {
+  fill: var(--node-text-infra);
+}
+
+/* A brief glow where the wave of traffic lands on a block. */
+.flash {
+  fill: var(--pulse);
+  fill-opacity: 0.16;
+  stroke: var(--pulse);
+  stroke-width: 1.5;
+  opacity: 0;
+  pointer-events: none;
+  animation: arrive var(--cycle) var(--at, 0s) infinite;
+}
+
+@keyframes arrive {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Wires: travelling pulses ---------- */
+
+.pulse path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 14 200;
+  stroke-dashoffset: 14;
+  opacity: 0;
+  animation-duration: var(--cycle);
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.pulse-core {
+  stroke-width: 3.5;
+}
+
+.pulse-glow {
+  stroke-width: 11;
+}
+
+.pulse--request .pulse-core {
+  stroke: #d6ecff;
+}
+
+.pulse--request .pulse-glow {
+  stroke: var(--pulse);
+  stroke-opacity: 0.42;
+}
+
+.pulse--response .pulse-core {
+  stroke: var(--pulse-response);
+  stroke-width: 3;
+}
+
+/* The path the pointer is over: the whole route from the bridge to that block lights up. */
+.route {
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+  filter: drop-shadow(0 0 6px rgba(10, 132, 255, 0.9));
+}
+
+.route--on {
+  opacity: 1;
+}
+
+.route path {
+  fill: none;
+  stroke: var(--hot);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.route-base {
+  stroke-width: 3;
+  stroke-opacity: 0.45;
+}
+
+.route-flow {
+  stroke: #d6ecff;
+  stroke-width: 3.5;
+  stroke-dasharray: 10 34;
+  animation: route-flow 0.8s linear infinite;
+}
+
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+
+/* ---------- Peripheral links: lift ---------- */
 
 .hit {
   fill: transparent;
@@ -146,26 +287,173 @@ h2 {
   outline: none;
 }
 
-.ip-node:hover .block--ip,
-.ip-node:focus-visible .block--ip {
+.ip-node .lift {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transition: transform 0.55s var(--spring);
+}
+
+.ip-node:hover .lift,
+.ip-node:focus-visible .lift {
+  transform: scale(1.09);
+}
+
+.ip-node .shadow {
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-out), transform 0.55s var(--spring);
+}
+
+.ip-node:hover .shadow,
+.ip-node:focus-visible .shadow {
+  opacity: 0.7;
+  transform: translateY(20px);
+}
+
+.ip-node:hover .block-base,
+.ip-node:focus-visible .block-base {
   fill: var(--hot);
 }
 
-.ip-node:hover .link line,
-.ip-node:focus-visible .link line {
-  stroke: var(--hot);
+.ip-node:hover .block-label,
+.ip-node:focus-visible .block-label {
+  fill: #fff;
 }
 
-.ip-node:hover .link polygon,
-.ip-node:focus-visible .link polygon {
-  fill: var(--hot);
+.ip-node:active .lift {
+  transform: scale(1.03);
+  transition-duration: 0.12s;
 }
 
-/* Blue alone is hard to tell from the hover state, so keyboard focus also gets a ring. */
-.ip-node:focus-visible .block--ip {
-  stroke: var(--paper-ink);
-  stroke-width: 4;
-  paint-order: stroke;
+/* Blue alone is hard to tell from hover, so keyboard focus also gets a ring. */
+.ip-node:focus-visible .block-glass {
+  stroke: #fff;
+  stroke-opacity: 0.9;
+  stroke-width: 2.5;
+}
+
+/* ---------- Legend ---------- */
+
+.key text {
+  fill: var(--ink-muted);
+  font-size: 15px;
+  dominant-baseline: central;
+}
+
+.key-dot--request {
+  fill: var(--pulse);
+}
+
+.key-dot--response {
+  fill: var(--pulse-response);
+}
+
+/* ---------- Entrance ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .frame {
+    animation: fade-in 0.8s var(--ease-out) backwards;
+  }
+
+  .bus {
+    animation: draw 1.2s var(--ease-out) 0.25s backwards;
+  }
+
+  .ip-node .lift {
+    animation: rise 0.9s var(--spring) backwards;
+    animation-delay: calc(0.45s + var(--i) * 45ms);
+  }
+
+  .title,
+  .hint,
+  .soc-tag,
+  .key {
+    animation: fade-in 1s var(--ease-out) 0.2s backwards;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+}
+
+/* Once the docs fully cover the diagram nothing needs to move. */
+.is-covered *,
+.is-covered *::before {
+  animation-play-state: paused !important;
+}
+
+/* Reduce Motion: no travelling traffic and no lift. State still reads through colour. */
+@media (prefers-reduced-motion: reduce) {
+  .pulse,
+  .flash {
+    display: none;
+  }
+
+  .pulse path,
+  .flash {
+    animation: none;
+  }
+
+  .route-flow {
+    display: none;
+  }
+
+  .ip-node .lift,
+  .ip-node .shadow {
+    transition: none;
+  }
+
+  .ip-node:hover .lift,
+  .ip-node:focus-visible .lift {
+    transform: none;
+  }
+}
+
+/* Reduce Transparency: flat fills instead of glass and glow. */
+@media (prefers-reduced-transparency: reduce) {
+  .block-glass {
+    fill: none;
+  }
+
+  .shadow,
+  .pulse-glow {
+    display: none;
+  }
+
+  .route {
+    filter: none;
+  }
+}
+
+/* Increase Contrast: stronger wires and rims. */
+@media (prefers-contrast: more) {
+  .bus,
+  .link line {
+    stroke: #6b7a8f;
+  }
+
+  .link polygon {
+    fill: #6b7a8f;
+  }
+
+  .block-glass {
+    stroke: #fff;
+    stroke-opacity: 0.6;
+  }
 }
 
 /* ---------- Docs: datasheet page ---------- */
@@ -197,8 +485,8 @@ h2 {
   gap: 12px 16px;
   padding: 14px clamp(16px, 4vw, 48px);
   border-bottom: 1px solid var(--paper-rule);
-  background: rgba(247, 248, 250, 0.92);
-  backdrop-filter: blur(8px);
+  background: rgba(14, 18, 23, 0.72);
+  backdrop-filter: blur(24px) saturate(1.6);
 }
 
 .doc-back {
@@ -280,9 +568,10 @@ h2 {
 
 .doc-head h1 {
   font-family: var(--font-display);
-  font-size: clamp(48px, 7vw, 88px);
-  line-height: 0.98;
-  letter-spacing: -0.015em;
+  font-size: clamp(40px, 5.4vw, 68px);
+  font-weight: 650;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
 }
 
 .doc-summary {
@@ -326,8 +615,9 @@ h2 {
 .doc section h2 {
   margin-bottom: 16px;
   font-family: var(--font-display);
-  font-size: 36px;
-  line-height: 1.1;
+  font-size: 28px;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 
 .doc section p {
@@ -401,12 +691,4 @@ td {
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 13px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .block,
-  .link line,
-  .link polygon {
-    transition: none;
-  }
 }
