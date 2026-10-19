@@ -1,15 +1,15 @@
 # System-Level Block Design
 
-An interactive 3D block diagram of an SoC. Two CPUs share an AHB bus on a raised tier, an
-AHB2APB bridge steps down to the APB tier, and thirteen peripheral IP blocks sit on it: UART,
+An interactive 3D block diagram of an SoC. A CPU, drawn as an exploded chip package with a floating
+lid, drives an AHB bus on a raised tier. An AHB2APB bridge steps down to the APB tier, and thirteen peripheral IP blocks sit on it: UART,
 I2C, SPI, I2S, xSPI, QSPI, PWM, RTC, TTC, WDT, SD4, SD6/eMMC and GPIO. Light travels the wires,
 blocks lift when you point at them, and a click flies the camera in. The block's documentation
 then opens as a circle that grows out of it.
 
 The layout follows the reference diagram in
-[`docs/assets/reference-diagram.jpg`](docs/assets/reference-diagram.jpg), with two
-simplifications: one AHB bus instead of separate master and slave buses, and no AHBC
-block between them. The flat 2D version of the same diagram is kept as the fallback.
+[`docs/assets/reference-diagram.jpg`](docs/assets/reference-diagram.jpg), with three
+simplifications: a single CPU instead of two, one AHB bus instead of separate master and
+slave buses, and no AHBC block between them. The flat 2D version of the same diagram is kept as the fallback.
 
 ![The 3D diagram, with traffic crossing the buses](docs/assets/landing.png)
 
@@ -19,9 +19,12 @@ block between them. The flat 2D version of the same diagram is kept as the fallb
 
 ## Features
 
-- **Height means hierarchy.** The CPUs and AHB bus sit on a raised glass tier; the APB bus and
+- **Height means hierarchy.** The CPU and AHB bus sit on a raised glass tier; the APB bus and
   the peripherals on a lower one. The step between them is lit.
-- **Electric flow.** A 9-second loop sends light from the CPUs down to the peripherals, then
+- **The CPU is a chip, not a box.** Substrate with glowing fan-out traces and gold pins, an
+  interposer, and a heat-spreader lid that lifts off the package when the scene assembles and then
+  floats. It glows blue as it sends a request and as the last answer returns.
+- **Electric flow.** An 8-second loop sends light from the CPU down to the peripherals, then
   back. It is a shader on the wires, so it costs one draw call.
 - **Lift.** Pointing at a block lifts it on a spring, turns it blue, dims the others, casts a
   blue wash on the tier and lights the route from the bridge to it.
@@ -93,6 +96,8 @@ src/
     world.ts           the 2D layout stood up in 3D: tiers, heights, wire paths
     Stage.tsx          board, surrounding components, tiers and bus rails
     Block.tsx          a glass block: lift spring, label, shadow and arrival flash
+    Chip.tsx           the CPU package: substrate, pins, interposer, floating lid
+    pins.ts            instanced pin and pad matrices around a square package
     Wires.tsx          conduits, travelling light and the hover route
     wires.ts           wire geometry and the light shaders
     textures.ts        canvas-generated labels, tier surfaces and board

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useMatch } from 'react-router-dom';
 import { arrival, CYCLE, flowCss, pulsePath, pulses, routeFor } from '../diagram/flow';
-import { ahb, apb, bridge, centreX, cpus, peripherals, VIEW, type Box } from '../diagram/layout';
+import { ahb, apb, bridge, centreX, cpu, peripherals, VIEW, type Box } from '../diagram/layout';
 import { ips } from '../data/ips';
 
 const HEAD = { length: 14, half: 7 };
@@ -35,6 +35,29 @@ function Block({ box, label, variant, flashAt }: { box: Box; label: string; vari
       <text className="block-label" x={centreX(box)} y={box.y + box.height / 2}>
         {label}
       </text>
+    </g>
+  );
+}
+
+// The CPU as a chip, not a box: a substrate with a ring of pins and the die at its centre.
+const PINS_PER_SIDE = 14;
+function Chip({ box, label, flashAt }: { box: Box; label: string; flashAt: number }) {
+  const inset = 22;
+  const die: Box = { x: box.x + box.width * 0.2, y: box.y + box.height * 0.2, width: box.width * 0.6, height: box.height * 0.6 };
+  const pins: { x: number; y: number; width: number; height: number }[] = [];
+  for (let i = 0; i < PINS_PER_SIDE; i++) {
+    const t = (i + 0.5) / PINS_PER_SIDE;
+    const along = inset + t * (box.width - inset * 2);
+    pins.push({ x: box.x + along - 2.5, y: box.y - 9, width: 5, height: 11 }, { x: box.x + along - 2.5, y: box.y + box.height - 2, width: 5, height: 11 });
+    pins.push({ x: box.x - 9, y: box.y + along - 2.5, width: 11, height: 5 }, { x: box.x + box.width - 2, y: box.y + along - 2.5, width: 11, height: 5 });
+  }
+  return (
+    <g className="chip">
+      {pins.map((pin, i) => (
+        <rect key={i} className="chip-pin" {...pin} rx="1.5" />
+      ))}
+      <rect className="chip-substrate" x={box.x} y={box.y} width={box.width} height={box.height} rx="16" />
+      <Block box={die} label={label} variant="infra" flashAt={flashAt} />
     </g>
   );
 }
@@ -133,9 +156,8 @@ export default function Diagram() {
 
         {/* Wires: a dim base, then the travelling pulses, then the hover route. */}
         <g className="wires" aria-hidden="true">
-          {cpus.map((cpu) => (
-            <Arrow key={cpu.label} x={centreX(cpu.box)} from={cpu.box.y + cpu.box.height} to={ahb.y} />
-          ))}
+          {/* The arrow starts below the pins, which stick out of the package. */}
+          <Arrow x={centreX(cpu.box)} from={cpu.box.y + cpu.box.height + 14} to={ahb.y} />
           <Arrow x={centreX(bridge.box)} from={ahb.y} to={bridge.box.y} />
           <Arrow x={centreX(bridge.box)} from={bridge.box.y + bridge.box.height} to={apb.y} />
           <Bus {...ahb} />
@@ -164,9 +186,7 @@ export default function Diagram() {
         </g>
 
         {/* Infrastructure: drawn for context, not linked. */}
-        {cpus.map((cpu) => (
-          <Block key={cpu.label} box={cpu.box} label={cpu.label} variant="infra" flashAt={arrival.cpu} />
-        ))}
+        <Chip box={cpu.box} label={cpu.label} flashAt={arrival.cpu} />
         <Bridge />
 
         {/* Peripherals: one link each. Hovering or focusing it lifts the block and lights its route. */}
@@ -190,10 +210,10 @@ export default function Diagram() {
         ))}
 
         <g className="key" aria-hidden="true">
-          <circle cx="76" cy="838" r="5" className="key-dot key-dot--request" />
-          <text x="90" y="838">Request</text>
-          <circle cx="176" cy="838" r="5" className="key-dot key-dot--response" />
-          <text x="190" y="838">Response</text>
+          <circle cx="76" cy="240" r="5" className="key-dot key-dot--request" />
+          <text x="90" y="240">Request</text>
+          <circle cx="176" cy="240" r="5" className="key-dot key-dot--response" />
+          <text x="190" y="240">Response</text>
         </g>
       </svg>
     </main>

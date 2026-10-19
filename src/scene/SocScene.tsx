@@ -8,6 +8,7 @@ import { arrival } from '../diagram/flow';
 import { clamp01, easeInOutCubic, easeOutCubic, prefersReducedMotion } from '../lib/motion';
 import { publishBlockOrigin } from '../lib/origin';
 import { Block } from './Block';
+import { Chip } from './Chip';
 import { Stage } from './Stage';
 import { INTRO, SceneStateContext, type SceneState } from './state';
 import { Wires } from './Wires';
@@ -52,9 +53,9 @@ const ARC_LIFT = 3;
 // How far the pointer can swing the camera, in world units.
 const PARALLAX = { x: 0.9, y: 0.4 };
 
-const OVERVIEW: Pose = { pos: new THREE.Vector3(0, 11.2, 17.0), look: new THREE.Vector3(0, 0, 0.45) };
+const OVERVIEW: Pose = { pos: new THREE.Vector3(0, 10.8, 18.2), look: new THREE.Vector3(0, 0.2, 0.35) };
 // The intro starts high and far and settles into the overview.
-const INTRO_POSE: Pose = { pos: new THREE.Vector3(0, 22, 31), look: new THREE.Vector3(0, 0, 0) };
+const INTRO_POSE: Pose = { pos: new THREE.Vector3(0, 23, 32), look: new THREE.Vector3(0, 0, 0) };
 
 // Where the camera should sit to look at a block: in front of it and above, so the label reads.
 function focusPose(spec: BlockSpec): Pose {
@@ -283,12 +284,13 @@ function Scene({ focusSlug, previewSlug, active, onSelect, onArrive, quality }: 
 
       <Stage />
       <Wires />
+      <Chip />
       {blocks.map((spec) => (
         <Block
           key={spec.id}
           spec={spec}
-          flashAt={spec.kind === 'ip' ? arrival.peripheral(spec.slug!) : spec.kind === 'bridge' ? arrival.bridge : arrival.cpu}
-          order={spec.kind === 'ip' ? ipBlocks.indexOf(spec) : blocks.indexOf(spec)}
+          flashAt={spec.kind === 'ip' ? arrival.peripheral(spec.slug!) : arrival.bridge}
+          order={spec.kind === 'ip' ? ipBlocks.indexOf(spec) : 1}
           locked={focusSlug !== null}
           onHover={handleHover}
           onPick={onSelect}

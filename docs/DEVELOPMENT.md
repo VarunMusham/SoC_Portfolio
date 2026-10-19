@@ -38,8 +38,10 @@ Nothing else should warn.
 Test these by hand in a browser after any change to the scene or the transitions:
 
 1. The page loads without console errors. (`THREE.Clock` is deprecated is expected, from a dependency.)
-2. The intro plays: the camera dollies in, the tiers rise, the blocks drop in one by one.
-3. Light travels from the CPUs to the peripherals, then back in mint. Blocks glow as it lands.
+2. The intro plays: the camera dollies in, the tiers rise, the chip lands and its lid lifts off,
+   and the blocks drop in one by one.
+3. Light travels from the CPU to the peripherals, then back in mint. Blocks glow as it lands, and
+   the chip's traces and under-glow flare as it sends and receives.
 4. Pointing at a block lifts it, turns it blue, dims the others and lights its route.
 5. Clicking a block flies the camera over the board to it, and the docs open as a circle from it.
 6. Esc and the back button shrink the circle back and the camera flies out.

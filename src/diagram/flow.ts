@@ -1,9 +1,9 @@
-import { ahb, apb, bridge, centreX, cpus, peripherals, type Peripheral } from './layout';
+import { ahb, apb, bridge, centreX, cpu, peripherals, type Peripheral } from './layout';
 
 // One loop of traffic: a request travels CPU -> AHB -> bridge -> APB -> peripheral, then each
 // peripheral answers back along the same wires. The schedule comes from the geometry, so a
 // block at the end of the APB bus is reached later than one beside the bridge.
-export const CYCLE = 9;
+export const CYCLE = 8;
 
 type Point = readonly [number, number];
 export type Pulse = {
@@ -15,9 +15,9 @@ export type Pulse = {
   kind: 'request' | 'response';
 };
 
-const REQUEST = { cpu: 0, ahb: 0.45, bridgeIn: 1.2, bridgeOut: 1.65, apb: 2.05 };
-const DURATION = { cpu: 0.5, ahb: 0.8, bridge: 0.35, apb: 1.3, leaf: 0.45 };
-const RESPONSE_AT = 4.4;
+const REQUEST = { cpu: 0, ahb: 0.45, bridgeIn: 0.55, bridgeOut: 0.95, apb: 1.35 };
+const DURATION = { cpu: 0.5, ahb: 0.7, bridge: 0.35, apb: 1.3, leaf: 0.45 };
+const RESPONSE_AT = 3.6;
 
 const cx = centreX(bridge.box);
 const bridgeBottom = bridge.box.y + bridge.box.height;
@@ -25,11 +25,10 @@ const apbHalf = (apb.to - apb.from) / 2;
 
 function requests(): Pulse[] {
   const out: Pulse[] = [];
-  for (const cpu of cpus) {
-    const x = centreX(cpu.box);
-    out.push({ id: `cpu-${cpu.label}`, from: [x, cpu.box.y + cpu.box.height], to: [x, ahb.y], start: REQUEST.cpu, dur: DURATION.cpu, kind: 'request' });
-    out.push({ id: `ahb-${cpu.label}`, from: [x, ahb.y], to: [cx, ahb.y], start: REQUEST.ahb, dur: DURATION.ahb, kind: 'request' });
-  }
+  out.push({ id: 'cpu', from: [cx, cpu.box.y + cpu.box.height], to: [cx, ahb.y], start: REQUEST.cpu, dur: DURATION.cpu, kind: 'request' });
+  // The CPU is the only master, so the bus rail simply carries the request out from its tap.
+  out.push({ id: 'ahb-left', from: [cx, ahb.y], to: [ahb.from, ahb.y], start: REQUEST.ahb, dur: DURATION.ahb, kind: 'request' });
+  out.push({ id: 'ahb-right', from: [cx, ahb.y], to: [ahb.to, ahb.y], start: REQUEST.ahb, dur: DURATION.ahb, kind: 'request' });
   out.push({ id: 'bridge-in', from: [cx, ahb.y], to: [cx, bridge.box.y], start: REQUEST.bridgeIn, dur: DURATION.bridge, kind: 'request' });
   out.push({ id: 'bridge-out', from: [cx, bridgeBottom], to: [cx, apb.y], start: REQUEST.bridgeOut, dur: DURATION.bridge, kind: 'request' });
   out.push({ id: 'apb-left', from: [cx, apb.y], to: [apb.from, apb.y], start: REQUEST.apb, dur: DURATION.apb, kind: 'request' });
@@ -61,6 +60,8 @@ export const pulses: Pulse[] = [...forward, ...replies];
 // When the wave reaches a block, for its arrival flash.
 export const arrival = {
   bridge: REQUEST.bridgeOut,
+  /** The CPU lights as it sends a request, and again when the last response comes back to it. */
+  cpuLaunch: REQUEST.cpu,
   cpu: RESPONSE_AT + forwardEnd,
   peripheral: (slug: string): number => {
     const leaf = forward.find((p) => p.id === `leaf-${slug}`);

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { pulses, type Pulse } from '../diagram/flow';
-import { ahb, apb, bridge, centreX, cpus, peripherals, VIEW, type Box } from '../diagram/layout';
+import { ahb, apb, bridge, centreX, cpu, peripherals, VIEW, type Box } from '../diagram/layout';
 
 // The 3D scene is the flat diagram stood up: x stays x, the diagram's y becomes depth (z),
 // and hierarchy becomes height. The CPUs and AHB bus sit on a raised tier, the APB bus and
@@ -18,7 +18,7 @@ const ROUTE_LIFT = 0.07;
 export type BlockSpec = {
   id: string;
   label: string;
-  kind: 'cpu' | 'bridge' | 'ip';
+  kind: 'bridge' | 'ip';
   slug?: string;
   cx: number;
   cz: number;
@@ -28,7 +28,7 @@ export type BlockSpec = {
   base: number;
 };
 
-const HEIGHT = { cpu: 0.7, bridge: 0.5, ip: 0.38 };
+const HEIGHT = { bridge: 0.5, ip: 0.38 };
 
 function spec(id: string, label: string, kind: BlockSpec['kind'], box: Box, slug?: string): BlockSpec {
   return {
@@ -45,8 +45,12 @@ function spec(id: string, label: string, kind: BlockSpec['kind'], box: Box, slug
   };
 }
 
+// The CPU is not a block: it is a stack of parts (substrate, interposer, lid) drawn by `Chip`.
+// The package is drawn larger than its slot in the flat layout: it is the centrepiece of the scene.
+const CHIP_SIZE = 3;
+export const chip = { cx: wx(cpu.box.x + cpu.box.width / 2), cz: wz(cpu.box.y + cpu.box.height / 2) - 0.1, size: CHIP_SIZE, base: TIER_A };
+
 export const blocks: BlockSpec[] = [
-  ...cpus.map((cpu) => spec(cpu.label, cpu.label, 'cpu', cpu.box)),
   spec('bridge', bridge.label, 'bridge', bridge.box),
   ...peripherals.map((p) => spec(p.slug, p.name, 'ip', p.box, p.slug)),
 ];
@@ -55,8 +59,8 @@ export const ipBlocks = blocks.filter((b) => b.kind === 'ip');
 
 export type Slab = { id: string; cx: number; cz: number; width: number; depth: number; top: number };
 
-const ahbHalf = 4.4;
-const ahbZ = [wz(cpus[0].box.y) - 0.55, wz(bridge.box.y + bridge.box.height) + 0.2];
+const ahbHalf = 3.4;
+const ahbZ = [chip.cz - chip.size / 2 - 0.4, wz(bridge.box.y + bridge.box.height) + 0.2];
 const apbHalf = (apb.to - apb.from) / 2 / PX + 0.5;
 const apbZ = [wz(apb.y) - 0.4, wz(Math.max(...peripherals.map((p) => p.box.y + p.box.height))) + 0.4];
 
@@ -86,7 +90,7 @@ export function wirePath(pulse: Pulse): THREE.Vector3[] {
     const edge = start.z + 0.2;
     points = [start, new THREE.Vector3(start.x, WIRE_A, edge), new THREE.Vector3(start.x, WIRE_B, edge), at(to[0], to[1], WIRE_B)];
   } else {
-    const height = id.startsWith('cpu') || id.startsWith('ahb') || id === 'bridge-in' ? WIRE_A : WIRE_B;
+    const height = id === 'cpu' || id.startsWith('ahb') || id === 'bridge-in' ? WIRE_A : WIRE_B;
     points = [at(from[0], from[1], height), at(to[0], to[1], height)];
   }
   return reply ? points.reverse() : points;

@@ -39,7 +39,8 @@ URL ──▶  Landing (always mounted, inert while docs are open)
 | `src/scene/SocScene.tsx` | Canvas, camera director (intro, parallax, flights), lights, quality tiers and post-processing. |
 | `src/scene/world.ts` | Stands the 2D layout up in 3D: tiers, heights and the 3D path of every wire. |
 | `src/scene/Stage.tsx` | The board, the surrounding components, the two tiers and the bus rails. |
-| `src/scene/Block.tsx` | One glass block: lift spring, label, shadow, arrival flash and pointer events. |
+| `src/scene/Block.tsx` | One glass block (the bridge and each peripheral): lift spring, label, shadow, arrival flash and pointer events. |
+| `src/scene/Chip.tsx`, `pins.ts` | The CPU package: substrate with traces, pins, interposer, gold pads, and a floating lid. |
 | `src/scene/Wires.tsx`, `wires.ts` | The conduits, the travelling light and the hover route, as three meshes with two shaders. |
 | `src/scene/textures.ts` | Canvas-generated labels, tier surfaces, shadow and board texture. |
 | `src/scene/state.ts` | Per-frame state shared by every part, and the intro timeline. |
@@ -54,11 +55,29 @@ carries the hierarchy:
 
 | Tier | Top height | Holds |
 | --- | --- | --- |
-| AHB tier | 0.55 | CPU 1, CPU 2, the AHB bus, the AHB2APB bridge |
+| AHB tier | 0.55 | the CPU, the AHB bus, the AHB2APB bridge |
 | APB tier | 0.14 | the APB bus and the thirteen peripherals |
 
 The one wire that leaves the bridge drops from one tier to the other. That is the only wire
 with a bend; every other wire is straight.
+
+### The CPU chip
+
+The CPU is not a `Block`. `Chip.tsx` builds an exploded view of a package from the bottom up:
+a dark substrate whose top is a generated fan-out routing texture (also its emissive map, so only
+the copper glows), a ring of instanced gold pins, an interposer with a row of pads, a blue point
+light in the gap, and a heat-spreader lid floating above with the name etched in.
+
+- **Assembly.** The package drops onto the tier with the other parts, then the lid lifts away over
+  about a second. After that the lid bobs gently, and the gap holds the under-glow.
+- **Light.** The traces and the under-glow flare as the CPU sends a request and again when the last
+  response returns (`arrival.cpuLaunch` and `arrival.cpu` in `flow.ts`).
+- **Size.** In 3D the package is 3.0 units square, larger than its 2.6-unit slot in the flat layout,
+  because it is the centrepiece. The tier and the wires are sized from it, not from the flat box.
+- **Not interactive.** The CPU has no documentation page, so it has no pointer handlers.
+
+The flat view draws the CPU as a small chip icon (substrate, a ring of pin ticks, the die) in the
+same place.
 
 ### Frame state
 
@@ -68,8 +87,8 @@ callback. Hovering therefore never re-renders React.
 
 ### Traffic
 
-`flow.ts` builds one 9-second loop from the layout: a request leaves each CPU, merges on the AHB
-bus, crosses the bridge and spreads along the APB bus; each peripheral's wire lights as the wave
+`flow.ts` builds one 8-second loop from the layout: a request leaves the CPU, taps the AHB rail
+(which carries it outward), crosses the bridge and spreads along the APB bus; each peripheral's wire lights as the wave
 passes its tap. The response is the same schedule reversed in direction and in time.
 
 In 3D, `wires.ts` builds a tube along every pulse's wire and merges all of them into **one mesh**.
